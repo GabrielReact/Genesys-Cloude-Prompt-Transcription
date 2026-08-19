@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+
+# Arquivos gerados localmente
+audios_baixados/
+prompts_sem_descricao_transcritos.csv
+prompts_sem_descricao_transcritos.html
+
+# Nunca versionar copias de credenciais reais.
+.env.local

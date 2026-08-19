@@ -34,9 +34,15 @@ PASTA_AUDIOS = PASTA / "audios_baixados"
 ARQUIVO_CSV = PASTA / "prompts_sem_descricao_transcritos.csv"
 ARQUIVO_HTML = PASTA / "prompts_sem_descricao_transcritos.html"
 CONTEXTO_URA = (
-    "Prompt de URA em portugues brasileiro. Use palavras por extenso e escreva "
-    "numeros como algarismos. Vocabulario frequente: tecle, digite, protocolo, "
-    "atendimento, aguarde para ser atendido, opcao e menu."
+    "URA em português brasileiro. Preserve nomes próprios, marcas e siglas. "
+    "Use algarismos para opções de menu, telefones, CPF, CNPJ, datas, valores e códigos. "
+    "Use a palavra hashtag para a tecla #. "
+    "Vocabulário frequente: tecle, digite, pressione, opção, menu, menu anterior, "
+    "retornar ao início, ouvir novamente, repetir, finalizar, atendimento, "
+    "central de relacionamento, aguarde em linha, protocolo, ligação gravada, "
+    "transferência, cartão, cartão consignado, segunda via, recarga, saldo, "
+    "fatura, cancelamento, senha, documento de identificação, site, login, "
+    "WhatsApp e PIX."
 )
 
 

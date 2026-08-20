@@ -1,89 +1,184 @@
-# Transcrição de prompts — Genesys Cloud
+# Genesys Cloud — Transcrição de Prompts
 
-🇧🇷 Português | [🇺🇸 English](README.en.md)
+Cataloga os **prompts de áudio da sua org Genesys Cloud que estão sem descrição**, transcreve cada áudio localmente com Whisper e mostra o resultado numa tabela HTML. Se você quiser, um botão preenche o campo *Description* de volta na org — só nos prompts que você selecionar e só depois de confirmar.
 
-A proposta é oferecer uma forma simples de transcrever e preencher as descrições dos prompts de áudio que ainda não possuem descrição, ajudando a eliminar prompts sem documentação na organização.
+Tudo roda na sua máquina: nenhum áudio sai do computador, nenhum serviço externo de transcrição é usado.
 
-A tabela HTML permite visualizar melhor os prompts encontrados, suas transcrições e selecionar quais descrições devem ser atualizadas na org.
+![Tabela de prompts transcritos](docs/screenshot.png)
 
-O arquivo CSV pode ser útil como documentação dos áudios. Quando os prompts seguem uma nomenclatura padronizada por projeto, ele facilita a identificação, consulta e organização dos respectivos textos.
+> Dados de exemplo. A tabela é gerada localmente e imita a tela de *Prompts* do Architect.
 
-Ferramenta local em Python baixa os áudios, transcreve com Whisper e gera uma tabela para revisão.
+---
 
-A tabela pode ser aberta em um servidor local e atualizar **somente os prompts selecionados**. Antes de cada atualização, o programa relê o prompt na org e pula o item caso já possua descrição.
+## Por que isso existe
 
-## O que a ferramenta altera
+Uma org com centenas de prompts de URA vira uma lista de nomes tipo `IVR_MENU_PRINCIPAL_V3` sem nenhuma pista do que o áudio realmente fala. Descobrir isso exige baixar e ouvir um por um. Este script faz esse trabalho e devolve uma tabela pesquisável — e, opcionalmente, escreve a transcrição como descrição do prompt na própria org.
 
-- O modo padrão é somente leitura: autentica, lista prompts, baixa áudio e gera CSV/HTML localmente.
-- O botão **Atualizar agora na Org** aparece na tabela e exige seleção e confirmação.
-- A atualização altera apenas o campo `description` do prompt selecionado.
-- Nome, áudio, idioma, recursos e prompts não são alterados ou excluídos.
+---
 
-## Requisitos da máquina
+## Como funciona
 
-- Python 3.10 ou superior.
-- Dependência Python: [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper).
+1. Autentica na Platform API (OAuth **Client Credentials**).
+2. Lista todos os prompts do Architect e filtra os que estão **sem descrição**.
+3. Baixa o áudio de cada um em `audios_baixados/`.
+4. Transcreve com **faster-whisper** (modelo `small`, CPU), usando um dicionário de contexto de URA em português para acertar termos como "tecle", "opção", "segunda via", "PIX".
+5. Gera `prompts_sem_descricao_transcritos.csv` e `prompts_sem_descricao_transcritos.html`.
+6. *(opcional)* Com `--servidor`, abre a tabela no navegador com um botão que grava as descrições na org.
 
-Instale a dependência:
+---
+
+## Requisitos
+
+- **Python 3.9+** (testado no 3.12)
+- Uma org Genesys Cloud e permissão para criar um OAuth Client
+- ~500 MB de espaço para o modelo Whisper, baixado automaticamente no primeiro uso
+- Só CPU — não precisa de GPU
+
+---
+
+## Instalação
+
+Clone o repositório e **entre na pasta antes de rodar qualquer comando** — todos os comandos abaixo assumem que você está dentro dela:
 
 ```bash
-python3 -m pip install --user -r requirements.txt
+git clone https://github.com/GabrielReact/Genesys-Cloude-Prompt-Transcription.git
+cd Genesys-Cloude-Prompt-Transcription
 ```
 
-O `faster-whisper` baixa o modelo Whisper na primeira transcrição. Este projeto usa o modelo `small`, em CPU, com `int8`. O pacote usa PyAV, que já inclui as bibliotecas necessárias para leitura de áudio; não é necessário instalar `ffmpeg` separadamente para este script.
+### Windows (PowerShell ou CMD)
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+> **Use `python`, não `python3`.** No Windows, `python3` costuma cair no atalho da Microsoft Store, que pode ser um interpretador **diferente** do que você instalou (ou nem existir de verdade) — foi assim que apareceu o `Could not open requirements file`. Se `python` não funcionar, use o launcher oficial: `py -3 -m pip install -r requirements.txt`.
+
+### Linux / macOS
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
+
+> O ambiente virtual (`.venv`) é opcional, mas evita conflito com outros projetos. Sem ele, acrescente `--user` ao `pip install`.
+
+---
 
 ## Configuração
 
-Preencha o arquivo `.env` localmente. Exemplo abaixo é a região de São Paulo.
+### 1. Crie o OAuth Client no Genesys Cloud
 
-```dotenv
-GENESYS_CLIENT_ID=
-GENESYS_CLIENT_SECRET=
-GENESYS_REGION_HOST=api.sae1.pure.cloud
-```
+Em **Admin → Integrations → OAuth → Add Client**:
 
-No cliente OAuth da Genesys, atribua a role com estas permissões:
+- **Grant Type:** `Client Credentials`
+- **Roles/permissões:**
+  - `Architect > User Prompt > View` — obrigatório (ler e baixar os prompts)
+  - `Architect > User Prompt > Edit` — só se você for usar o botão de atualizar descrições
 
-- `Architect > User Prompt > View` — para listar e baixar os prompts.
-- `Architect > User Prompt > Edit` — necessária somente para atualizar descrições selecionadas.
+Anote o **Client ID** e o **Client Secret**.
 
-## Gerar a tabela
+### 2. Preencha o `.env`
 
-```bash
-python3 catalogar_prompts_sem_descricao.py
-```
-
-Arquivos locais gerados:
-
-- `prompts_sem_descricao_transcritos.csv`
-- `prompts_sem_descricao_transcritos.html`
-- `audios_baixados/`
-
-Para um teste curto, use:
+Copie o modelo e edite:
 
 ```bash
-python3 catalogar_prompts_sem_descricao.py --limite 5
+# Windows
+copy .env.example .env
+# Linux / macOS
+cp .env.example .env
 ```
 
-## Revisar e atualizar descrições selecionadas
+```ini
+GENESYS_CLIENT_ID=seu-client-id
+GENESYS_CLIENT_SECRET=seu-client-secret
+GENESYS_REGION_HOST=https://api.sae1.pure.cloud
+```
 
-Inicie o servidor local:
+O host é o da **sua região** — `api.sae1.pure.cloud` (São Paulo), `api.mypurecloud.com` (US East), `api.mypurecloud.ie` (EU West), etc. Pode informar com ou sem `https://`.
+
+---
+
+## Uso
+
+Troque `python` por `python3` se estiver no Linux/macOS.
 
 ```bash
-python3 catalogar_prompts_sem_descricao.py --servidor
+# Teste rápido: lista e transcreve apenas 5 prompts
+python catalogar_prompts_sem_descricao.py --limite 5
+
+# Processa todos os prompts sem descrição
+python catalogar_prompts_sem_descricao.py
+
+# Só monta a tabela, sem baixar nem transcrever (bem rápido, bom pra ver o volume)
+python catalogar_prompts_sem_descricao.py --somente-listar
+
+# Abre a tabela no navegador e habilita a atualização na org
+python catalogar_prompts_sem_descricao.py --servidor
 ```
 
-O navegador abre `http://127.0.0.1:8765/`. Marque um ou mais prompts, ou use a caixa do cabeçalho para selecionar todos. Em seguida clique em **Atualizar agora na Org** e confirme.
+| Flag | O que faz |
+|---|---|
+| `--limite N` | Processa no máximo N prompts (`0` = todos, padrão) |
+| `--somente-listar` | Gera a tabela sem baixar áudio nem transcrever |
+| `--servidor` | Sobe um servidor local em `127.0.0.1` e abre a tabela no navegador |
+| `--porta N` | Porta do servidor local (padrão `8765`) |
 
-O servidor é local, portanto não fica acessível por outros computadores da rede.
+A primeira execução demora mais: o modelo Whisper (~460 MB) é baixado e fica em cache para as próximas.
 
-## Observações sobre a transcrição
+### O modo `--servidor`
 
-Whisper é uma ajuda para gerar rascunhos de descrição. Revise principalmente nomes de marcas, siglas, valores, telefones e opções de URA antes de atualizar a org.
+Abre a tabela com três recursos a mais que o HTML solto:
 
-O contexto de vocabulário usado na transcrição está na constante `CONTEXTO_URA` do script. Ele melhora termos comuns de URA, mas não garante reconhecimento perfeito de áudios ruins ou nomes próprios.
+- **Busca** por nome, transcrição ou status
+- **Refresh** — relê a org e traz prompts novos que ainda não estão na tabela (só leitura); eles entram como *Pendente de transcrição* — rode o script pela linha de comando de novo para transcrevê-los
+- **Atualizar agora na Org** — grava a transcrição no campo *Description* dos prompts marcados
 
+Rode o `--servidor` sempre da mesma pasta: ele lê o CSV e o HTML que já foram gerados ali.
 
-##
-Feito por [LinkedIn — Gabriel Carvalho](https://www.linkedin.com/in/gabriel-carvalho-9b3b66214/)
-##
+---
+
+## Segurança e escopo da escrita
+
+Este ponto é o que torna a ferramenta segura de rodar numa org de produção:
+
+- **O modo padrão é 100% leitura.** Sem `--servidor`, nada é escrito na org.
+- A escrita só existe pelo botão do HTML local e **exige confirmação no navegador**.
+- **Só descrições vazias são preenchidas.** Antes de cada `PUT`, o prompt é relido na org: se alguém já escreveu uma descrição no meio do caminho, ele é pulado.
+- O script **nunca** altera nome, áudio, recurso de idioma, nem exclui prompt algum.
+- O servidor escuta apenas em `127.0.0.1` — não fica exposto na rede.
+- O `.env` está no `.gitignore`. Nunca comite Client Secret.
+
+---
+
+## Arquivos gerados
+
+| Arquivo | Conteúdo |
+|---|---|
+| `audios_baixados/` | Áudios baixados, nomeados `{id-do-prompt}_{idioma}` |
+| `prompts_sem_descricao_transcritos.csv` | Tabela completa (UTF-8 BOM, abre direto no Excel) |
+| `prompts_sem_descricao_transcritos.html` | Mesma tabela, navegável e pesquisável no navegador |
+
+Nenhum dos três vai para o Git — todos estão no `.gitignore`.
+
+---
+
+## Problemas comuns
+
+| Sintoma | Causa e solução |
+|---|---|
+| `Could not open requirements file` | Você não está dentro da pasta do projeto, ou o `python3` do Windows caiu no atalho da Microsoft Store. Faça `cd` na pasta e use `python` / `py -3`. |
+| `Configuração não encontrada: ...\.env` | O `.env` não foi criado. Copie o `.env.example`. |
+| `HTTP 400 invalid_client` no token | Client ID/Secret errados, ou o `GENESYS_REGION_HOST` é de outra região. |
+| `HTTP 403` ao atualizar | Falta a permissão `Architect > User Prompt > Edit` no OAuth Client. |
+| `Address already in use` | A porta `8765` está ocupada. Use `--porta 8080`. |
+| Transcrição lenta | Normal em CPU. Use `--limite` para testar antes de rodar tudo. |
+
+---
+
+## Stack
+
+Python 3 · [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (CTranslate2) · Genesys Cloud Platform API v2 · `http.server` e `urllib` da biblioteca padrão — sem framework web e sem SDK.

@@ -1,7 +1,9 @@
 # Transcrição de prompts — Genesys Cloud
 
 A proposta é oferecer uma forma simples de transcrever e preencher as descrições dos prompts de áudio que ainda não possuem descrição, ajudando a eliminar prompts sem documentação na organização.
+
 A tabela HTML permite visualizar melhor os prompts encontrados, suas transcrições e selecionar quais descrições devem ser atualizadas na org.
+
 O arquivo CSV pode ser útil como documentação dos áudios. Quando os prompts seguem uma nomenclatura padronizada por projeto, ele facilita a identificação, consulta e organização dos respectivos textos.
 
 Ferramenta local em Python baixa os áudios, transcreve com Whisper e gera uma tabela para revisão.

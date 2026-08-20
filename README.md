@@ -1,10 +1,10 @@
 # Transcrição de prompts — Genesys Cloud
 
-A ideia geral é de uma maneira simples de adicionar a transcrição do prompt para todos que estão sem, tendo o controle em escolher quais quer, podendo dessa maneira testar a funcionalidad ou selecionar todos de uma vez, para sua org dar um fim a prompt sem descrição.
-A ideia do servidor aberto em HTML é para uma melhor visualização dos prompts e de como ficou a transcrição.
-A geração do CSV pode ser muito util caso os prompts tenha uma nomenclatura padrão por projeto, poderá ter uma documentação dos áudios e os textos deles.
+A proposta é oferecer uma forma simples de transcrever e preencher as descrições dos prompts de áudio que ainda não possuem descrição, ajudando a eliminar prompts sem documentação na organização.
+A tabela HTML permite visualizar melhor os prompts encontrados, suas transcrições e selecionar quais descrições devem ser atualizadas na org.
+O arquivo CSV pode ser útil como documentação dos áudios. Quando os prompts seguem uma nomenclatura padronizada por projeto, ele facilita a identificação, consulta e organização dos respectivos textos.
 
-Ferramenta local em Python para localizar prompts de áudio sem descrição no Genesys Cloud, baixar os áudios, transcrevê-los com Whisper e gerar uma tabela para revisão, com apenas duas simples permissões de role para o Oauth.
+Ferramenta local em Python baixa os áudios, transcreve com Whisper e gera uma tabela para revisão.
 
 A tabela pode ser aberta em um servidor local e atualizar **somente os prompts selecionados**. Antes de cada atualização, o programa relê o prompt na org e pula o item caso já possua descrição.
 
@@ -79,6 +79,7 @@ Whisper é uma ajuda para gerar rascunhos de descrição. Revise principalmente 
 
 O contexto de vocabulário usado na transcrição está na constante `CONTEXTO_URA` do script. Ele melhora termos comuns de URA, mas não garante reconhecimento perfeito de áudios ruins ou nomes próprios.
 
+
 ##
-Feito por https://www.linkedin.com/in/gabriel-carvalho-9b3b66214/?locale=pt
+Feito por [LinkedIn — Gabriel Carvalho](https://www.linkedin.com/in/gabriel-carvalho-9b3b66214/)
 ##

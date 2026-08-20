@@ -1,5 +1,7 @@
 # Catálogo de descrições de prompts — Genesys Cloud
 
+🇧🇷 Português | [🇺🇸 English](README.en.md)
+
 Ferramenta local em Python para localizar prompts de áudio sem descrição no Genesys Cloud, baixar os áudios, transcrevê-los com Whisper e gerar uma tabela para revisão.
 
 Após revisão, a tabela pode ser aberta em um servidor local e atualizar **somente os prompts selecionados**. Antes de cada atualização, o programa relê o prompt na org e pula o item caso outra pessoa já tenha preenchido a descrição.

@@ -1,10 +1,16 @@
-# Prompt Description Catalog — Genesys Cloud
+# Prompt Transcription — Genesys Cloud
 
 [🇧🇷 Português](README.md) | 🇺🇸 English
 
-Local Python tool that finds audio prompts without descriptions in Genesys Cloud, downloads their audio, transcribes them with Whisper, and generates a table for review.
+The goal is to provide a simple way to transcribe and fill in the descriptions of audio prompts that do not yet have one, helping eliminate undocumented prompts in the organization.
 
-After review, the table can be opened through a local server to update **only the selected prompts**. Before each update, the program reads the prompt from the org again and skips it if someone has already added a description.
+The HTML table makes it easier to review the prompts found, their transcriptions, and select which descriptions should be updated in the org.
+
+The CSV file can be useful as audio documentation. When prompts follow a naming standard by project, it makes their corresponding texts easier to identify, consult, and organize.
+
+This local Python tool downloads audio, transcribes it with Whisper, and generates a table for review.
+
+The table can be opened through a local server and update **only the selected prompts**. Before each update, the program reads the prompt from the org again and skips it if it already has a description.
 
 ## What the tool changes
 
@@ -15,9 +21,7 @@ After review, the table can be opened through a local server to update **only th
 
 ## Machine requirements
 
-- Linux, macOS, or Windows with **Python 3.10 or later**.
-- Network access to your Genesys Cloud org region.
-- A browser to open the local table.
+- Python 3.10 or later.
 - Python dependency: [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper).
 
 Install the dependency:
@@ -30,7 +34,7 @@ python3 -m pip install --user -r requirements.txt
 
 ## Configuration
 
-Fill in the local `.env` file. Never push real credential values to GitHub.
+Fill in the local `.env` file. The example below uses the São Paulo region.
 
 ```dotenv
 GENESYS_CLIENT_ID=
@@ -38,7 +42,7 @@ GENESYS_CLIENT_SECRET=
 GENESYS_REGION_HOST=api.sae1.pure.cloud
 ```
 
-In the Genesys OAuth client, assign a role with the following permissions, scoped to the appropriate division:
+In the Genesys OAuth client, assign a role with the following permissions:
 
 - `Architect > User Prompt > View` — to list and download prompts.
 - `Architect > User Prompt > Edit` — required only to update selected descriptions.
@@ -54,8 +58,6 @@ The following local files are generated:
 - `prompts_sem_descricao_transcritos.csv`
 - `prompts_sem_descricao_transcritos.html`
 - `audios_baixados/`
-
-They are excluded from the repository because they contain data extracted from the org and can take substantial disk space.
 
 For a short test, run:
 
@@ -73,10 +75,14 @@ python3 catalogar_prompts_sem_descricao.py --servidor
 
 Your browser opens `http://127.0.0.1:8765/`. Select one or more prompts, or use the header checkbox to select all of them. Then click **Update now in the Org** and confirm.
 
-The server listens only on `127.0.0.1`, so it is not accessible from other computers on the network.
+The server is local, so it is not accessible from other computers on the network.
 
 ## Transcription notes
 
 Whisper helps generate description drafts. Review brand names, acronyms, values, phone numbers, and IVR menu options before updating the org.
 
 The transcription vocabulary context is defined in the `CONTEXTO_URA` constant in the script. It improves common IVR terms, but does not guarantee perfect recognition of poor-quality audio or proper names.
+
+##
+Created by [LinkedIn — Gabriel Carvalho](https://www.linkedin.com/in/gabriel-carvalho-9b3b66214/)
+##

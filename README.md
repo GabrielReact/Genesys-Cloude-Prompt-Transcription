@@ -1,5 +1,7 @@
 # Genesys Cloud — Transcrição de Prompts
 
+🇧🇷 Português | [🇺🇸 English](README.en.md)
+
 Cataloga os **prompts de áudio da sua org Genesys Cloud que estão sem descrição**, transcreve cada áudio localmente com Whisper e mostra o resultado numa tabela HTML. Se você quiser, um botão preenche o campo *Description* de volta na org — só nos prompts que você selecionar e só depois de confirmar.
 
 Tudo roda na sua máquina: nenhum áudio sai do computador, nenhum serviço externo de transcrição é usado.
@@ -182,3 +184,7 @@ Nenhum dos três vai para o Git — todos estão no `.gitignore`.
 ## Stack
 
 Python 3 · [faster-whisper](https://github.com/SYSTRAN/faster-whisper) (CTranslate2) · Genesys Cloud Platform API v2 · `http.server` e `urllib` da biblioteca padrão — sem framework web e sem SDK.
+
+---
+
+Feito por [Gabriel Carvalho](https://www.linkedin.com/in/gabriel-carvalho-9b3b66214/?locale=pt)
